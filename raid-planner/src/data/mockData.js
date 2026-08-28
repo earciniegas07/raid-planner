@@ -20,14 +20,14 @@ export const initialClans = [
   ];
   
   export const initialRaids = [
-    { id: 101, name: "Naxxramas Core", difficulty: "Mythic", state: "Planning", startTime: "2026-09-01T20:00:00Z", durationHours: 3, minPlayers: 10, maxPlayers: 20, clanId: 1 },
-    { id: 102, name: "Molten Caverns", difficulty: "Heroic", state: "Planning", startTime: "2026-09-02T18:00:00Z", durationHours: 2, minPlayers: 10, maxPlayers: 15, clanId: 1 },
-    { id: 103, name: "Ulduar Keep", difficulty: "Mythic", state: "Locked", startTime: "2026-09-03T19:00:00Z", durationHours: 4, minPlayers: 10, maxPlayers: 25, clanId: 1 },
-    { id: 104, name: "Black Temple", difficulty: "Heroic", state: "Locked", startTime: "2026-09-04T21:00:00Z", durationHours: 3, minPlayers: 10, maxPlayers: 20, clanId: 2 },
-    { id: 105, name: "Icecrown Citadel", difficulty: "Impossible", state: "Locked", startTime: "2026-09-05T22:00:00Z", durationHours: 5, minPlayers: 10, maxPlayers: 30, clanId: 2 },
-    { id: 106, name: "Onyxia Lair", difficulty: "Normal", state: "InProgress", startTime: "2026-08-27T17:00:00Z", durationHours: 2, minPlayers: 10, maxPlayers: 15, clanId: 1 },
-    { id: 107, name: "Serpentshrine Cavern", difficulty: "Heroic", state: "InProgress", startTime: "2026-08-27T16:00:00Z", durationHours: 3, minPlayers: 10, maxPlayers: 20, clanId: 3 },
-    { id: 108, name: "Sunwell Plateau", difficulty: "Mythic", state: "Completed", startTime: "2026-08-20T20:00:00Z", durationHours: 4, minPlayers: 10, maxPlayers: 25, clanId: 1 }
+    { id: 101, name: "Naxxramas Core", difficulty: "Mythic", state: "Planning", startTime: "2026-09-01T20:00:00Z", durationHours: 3, minPlayers: 10, maxPlayers: 20, clanId: 1, requiredRoles: { Tank: 1, Healer: 1, DPS: 1 } },
+    { id: 102, name: "Molten Caverns", difficulty: "Heroic", state: "Planning", startTime: "2026-09-02T18:00:00Z", durationHours: 2, minPlayers: 10, maxPlayers: 15, clanId: 1, requiredRoles: { Tank: 1, Healer: 2 } },
+    { id: 103, name: "Ulduar Keep", difficulty: "Mythic", state: "Locked", startTime: "2026-09-03T19:00:00Z", durationHours: 4, minPlayers: 10, maxPlayers: 25, clanId: 1, requiredRoles: { Tank: 2, Healer: 1, DPS: 1 } },
+    { id: 104, name: "Black Temple", difficulty: "Heroic", state: "Locked", startTime: "2026-09-04T21:00:00Z", durationHours: 3, minPlayers: 10, maxPlayers: 20, clanId: 2, requiredRoles: { Tank: 1, Healer: 1, DPS: 1, Support: 1 } },
+    { id: 105, name: "Icecrown Citadel", difficulty: "Impossible", state: "Locked", startTime: "2026-09-05T22:00:00Z", durationHours: 5, minPlayers: 10, maxPlayers: 30, clanId: 2, requiredRoles: { Tank: 1, Healer: 1, Support: 1 } },
+    { id: 106, name: "Onyxia Lair", difficulty: "Normal", state: "InProgress", startTime: "2026-08-27T17:00:00Z", durationHours: 2, minPlayers: 10, maxPlayers: 15, clanId: 1, requiredRoles: { Tank: 1, Healer: 1, DPS: 1 } },
+    { id: 107, name: "Serpentshrine Cavern", difficulty: "Heroic", state: "InProgress", startTime: "2026-08-27T16:00:00Z", durationHours: 3, minPlayers: 10, maxPlayers: 20, clanId: 3, requiredRoles: { Healer: 1, DPS: 1, Support: 1 } },
+    { id: 108, name: "Sunwell Plateau", difficulty: "Mythic", state: "Completed", startTime: "2026-08-20T20:00:00Z", durationHours: 4, minPlayers: 10, maxPlayers: 25, clanId: 1, requiredRoles: { Tank: 2, Healer: 2, DPS: 1 } },
   ];
   
   export const initialFailures = Array.from({ length: 35 }, (_, index) => ({

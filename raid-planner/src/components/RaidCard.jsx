@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { RaidContext } from '../context/RaidContext';
+import { RoleAssignments } from './RoleAssignments';
 
 export function RaidCard({ raid }) {
   const { currentUser } = useContext(AuthContext);
@@ -26,6 +27,8 @@ export function RaidCard({ raid }) {
           </>
         )}
       </div>
+
+      {raid.state !== 'Planning' && <RoleAssignments raidId={raid.id} />}
     </div>
   );
 }
