@@ -15,22 +15,14 @@ export function FailureTracker() {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ background: '#1f2937', padding: '15px', borderRadius: '8px', color: '#fff', marginTop: '20px' }}>
+    <form onSubmit={handleSubmit} className="form-panel">
       <h3>Registrar Fallo Mecánico ("Fallómetro")</h3>
-      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+      <div className="form-row">
         <select value={selectedUser} onChange={e => setSelectedUser(e.target.value)}>
-          {users.map(u => (
-            <option key={u.id} value={u.id}>
-              {u.gamertag} ({u.class})
-            </option>
-          ))}
+          {users.map(u => <option key={u.id} value={u.id}>{u.gamertag} ({u.class})</option>)}
         </select>
         <select value={selectedRaid} onChange={e => setSelectedRaid(e.target.value)}>
-          {raids.map(r => (
-            <option key={r.id} value={r.id}>
-              {r.name}
-            </option>
-          ))}
+          {raids.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
         <select value={failureType} onChange={e => setFailureType(e.target.value)}>
           <option value="Failed mechanic">Failed mechanic</option>
@@ -45,9 +37,7 @@ export function FailureTracker() {
           <option value={3}>Major (3 pts)</option>
           <option value={5}>Critical (5 pts)</option>
         </select>
-        <button type="submit" style={{ background: '#dc2626', color: '#fff', border: 'none', padding: '5px 15px', cursor: 'pointer' }}>
-          Registrar
-        </button>
+        <button type="submit" className="btn btn-danger">Registrar</button>
       </div>
     </form>
   );

@@ -7,12 +7,10 @@ export function RaidsPage() {
   const { raids } = useContext(RaidContext);
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div className="page">
       <h2>Gestión de Raids</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '15px' }}>
-        {raids.map(raid => (
-          <RaidCard key={raid.id} raid={raid} />
-        ))}
+      <div className="grid-cards">
+        {raids.map(raid => <RaidCard key={raid.id} raid={raid} />)}
       </div>
       <FailureTracker />
     </div>

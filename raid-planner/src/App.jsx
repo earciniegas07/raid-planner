@@ -5,7 +5,7 @@ import { Navbar } from './components/Navbar';
 import { ClanPage } from './pages/ClanPage';
 import { RaidsPage } from './pages/RaidsPage';
 import { HallOfShame } from './pages/HallOfShame';
-import './App.css';
+import './theme.css';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('raids');
@@ -13,7 +13,7 @@ export default function App() {
   return (
     <AuthProvider>
       <RaidProvider>
-        <div style={{ background: '#0f172a', minHeight: '100vh', color: '#f8fafc' }}>
+        <div className="app-shell">
           <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
           {activeTab === 'clans' && <ClanPage />}
           {activeTab === 'raids' && <RaidsPage />}

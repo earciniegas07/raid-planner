@@ -5,44 +5,33 @@ import { initialClans } from '../data/mockData';
 export function ClanPage() {
   const { users } = useContext(RaidContext);
 
-  const th = { padding: '10px' };
-  const td = { padding: '8px' };
-
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Clanes & Lista de Miembros</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginBottom: '20px' }}>
+    <div className="page">
+      <h2>Clanes & Miembros</h2>
+
+      <div className="grid-3">
         {initialClans.map(clan => (
-          <div key={clan.id} style={{ border: '1px solid #4b5563', padding: '15px', borderRadius: '8px', background: '#111827', color: '#fff' }}>
+          <div key={clan.id} className="clan-card">
             <h3>{clan.name}</h3>
-            <p>Facción: <strong>{clan.faction}</strong></p>
-            <p>{clan.description}</p>
+            <span className="faction">{clan.faction}</span>
+            <p className="desc">{clan.description}</p>
           </div>
         ))}
       </div>
-      <h3>Miembros Registrados</h3>
-      <table style={{ width: '100%', borderCollapse: 'collapse', color: '#fff', background: '#1f2937' }}>
-        <thead>
-          <tr style={{ background: '#374151' }}>
-            <th style={th}>Gamertag</th>
-            <th style={th}>Clase</th>
-            <th style={th}>Nivel</th>
-            <th style={th}>Rol Clan</th>
-            <th style={th}>Fiabilidad</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(u => (
-            <tr key={u.id} style={{ textAlign: 'center', borderBottom: '1px solid #374151' }}>
-              <td style={td}>{u.gamertag}</td>
-              <td style={td}>{u.class}</td>
-              <td style={td}>{u.level}</td>
-              <td style={td}>{u.role}</td>
-              <td style={td}>{u.reliability} pts</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+      <h3>Roster</h3>
+      <div className="frame-grid">
+        {users.map(u => (
+          <div key={u.id} className="raid-frame" data-class={u.class}>
+            <span className="name">{u.gamertag}</span>
+            <span className="class-tag">{u.class}</span>
+            <span className="stat">Lv.{u.level}</span>
+            <div className="reliability-bar" title={`${u.reliability} pts`}>
+              <span style={{ width: `${Math.min(100, u.reliability)}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

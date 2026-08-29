@@ -5,33 +5,34 @@ export function HallOfShame() {
   const { users, failures } = useContext(RaidContext);
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div className="page">
       <h2>Rankings & Hall of Shame</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-        <div style={{ background: '#111827', padding: '15px', borderRadius: '8px', color: '#fff' }}>
+      <div className="grid-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <div className="panel">
           <h3>Jugadores más Fiables</h3>
-          <ul>
-            {[...users]
-              .sort((a, b) => b.reliability - a.reliability)
-              .map(u => (
-                <li key={u.id}>
-                  {u.gamertag} - {u.reliability} pts ({u.role})
-                </li>
-              ))}
-          </ul>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {[...users].sort((a, b) => b.reliability - a.reliability).map(u => (
+              <div key={u.id} className="raid-frame" data-class={u.class}>
+                <span className="name">{u.gamertag}</span>
+                <span className="class-tag">{u.role}</span>
+                <span className="stat">{u.reliability} pts</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <div style={{ background: '#111827', padding: '15px', borderRadius: '8px', color: '#fff' }}>
+
+        <div className="panel">
           <h3>Historial de Fallos (Audit Log)</h3>
-          <ul>
-            {failures.slice(-10).map(f => {
-              const user = users.find(u => u.id === f.userId);
-              return (
-                <li key={f.id} style={{ color: f.severity === 5 ? '#ef4444' : '#f59e0b' }}>
-                  <strong>{user?.gamertag}</strong>: {f.type} (Gravedad: {f.severity})
-                </li>
-              );
-            })}
-          </ul>
+          {failures.slice(-10).reverse().map(f => {
+            const user = users.find(u => u.id === f.userId);
+            const sevColor = f.severity === 5 ? 'var(--state-failed)' : f.severity === 3 ? 'var(--state-planning)' : 'var(--text-dim)';
+            return (
+              <div key={f.id} className="audit-item">
+                <span className="sev-dot" style={{ background: sevColor }} />
+                <strong>{user?.gamertag}</strong> — {f.type} (Gravedad: {f.severity})
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
