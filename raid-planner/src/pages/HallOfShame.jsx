@@ -7,7 +7,7 @@ export function HallOfShame() {
   return (
     <div className="page">
       <h2>Rankings & Hall of Shame</h2>
-      <div className="grid-3" style={{ gridTemplateColumns: '1fr 1fr' }}>
+      <div className="grid-2">
         <div className="panel">
           <h3>Jugadores más Fiables</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>

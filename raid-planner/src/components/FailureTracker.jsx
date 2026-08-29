@@ -1,17 +1,50 @@
 import { useContext, useState } from 'react';
 import { RaidContext } from '../context/RaidContext';
 
+const FAILURE_TYPES = [
+  'Failed mechanic',
+  'Interrupted wrong target',
+  'Pulled early',
+  'Broke CC',
+  'Wrong positioning',
+  'AFK during pull',
+];
+
 export function FailureTracker() {
   const { users, raids, addFailure } = useContext(RaidContext);
-  const [selectedUser, setSelectedUser] = useState(users[0]?.id || 1);
-  const [selectedRaid, setSelectedRaid] = useState(raids[0]?.id || 101);
-  const [failureType, setFailureType] = useState('Failed mechanic');
+  const [selectedUser, setSelectedUser] = useState(users[0]?.id || '');
+  const [selectedRaid, setSelectedRaid] = useState(raids[0]?.id || '');
+  const [failureType, setFailureType] = useState(FAILURE_TYPES[0]);
   const [severity, setSeverity] = useState(1);
+  const [feedback, setFeedback] = useState(null);
+
+  if (users.length === 0 || raids.length === 0) {
+    return (
+      <div className="form-panel">
+        <p>No hay jugadores o raids disponibles para registrar fallos todavía.</p>
+      </div>
+    );
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!selectedUser || !selectedRaid) {
+      setFeedback({ type: 'error', text: 'Selecciona un jugador y una raid antes de registrar el fallo.' });
+      return;
+    }
+
+    const raid = raids.find(r => r.id === Number(selectedRaid));
+    if (raid && raid.state === 'Planning') {
+      setFeedback({ type: 'error', text: 'No se puede registrar un fallo en una raid que todavía está en Planning (aún no empieza).' });
+      return;
+    }
+
     addFailure(Number(selectedUser), Number(selectedRaid), failureType, Number(severity));
-    alert('Fallo registrado correctamente');
+
+    const user = users.find(u => u.id === Number(selectedUser));
+    setFeedback({ type: 'success', text: `Fallo registrado para ${user?.gamertag}.` });
+    setTimeout(() => setFeedback(null), 3500);
   };
 
   return (
@@ -25,12 +58,7 @@ export function FailureTracker() {
           {raids.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
         <select value={failureType} onChange={e => setFailureType(e.target.value)}>
-          <option value="Failed mechanic">Failed mechanic</option>
-          <option value="Interrupted wrong target">Interrupted wrong target</option>
-          <option value="Pulled early">Pulled early</option>
-          <option value="Broke CC">Broke CC</option>
-          <option value="Wrong positioning">Wrong positioning</option>
-          <option value="AFK during pull">AFK during pull</option>
+          {FAILURE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
         <select value={severity} onChange={e => setSeverity(e.target.value)}>
           <option value={1}>Minor (1 pt)</option>
@@ -39,6 +67,10 @@ export function FailureTracker() {
         </select>
         <button type="submit" className="btn btn-danger">Registrar</button>
       </div>
+
+      {feedback && (
+        <div className={`form-feedback ${feedback.type}`}>{feedback.text}</div>
+      )}
     </form>
   );
 }

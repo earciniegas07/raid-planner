@@ -5,34 +5,23 @@ export function Navbar({ activeTab, setActiveTab }) {
   const { currentUser, switchUser, users } = useContext(AuthContext);
 
   return (
-    <nav style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', background: '#1e1e24', color: '#fff', alignItems: 'center' }}>
-      <div>
-        <h2 style={{ margin: 0 }}>🛡️ RaidPlanner</h2>
+    <nav className="navbar">
+      <h2 className="nav-brand">Raid<span>Planner</span></h2>
+
+      <div className="nav-tabs">
+        <button className={`nav-tab ${activeTab === 'clans' ? 'active' : ''}`} onClick={() => setActiveTab('clans')}>Clanes</button>
+        <button className={`nav-tab ${activeTab === 'raids' ? 'active' : ''}`} onClick={() => setActiveTab('raids')}>Raids</button>
+        <button className={`nav-tab ${activeTab === 'hall' ? 'active' : ''}`} onClick={() => setActiveTab('hall')}>Hall of Shame</button>
       </div>
 
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <button onClick={() => setActiveTab('clans')} style={btnStyle(activeTab === 'clans')}>Clanes</button>
-        <button onClick={() => setActiveTab('raids')} style={btnStyle(activeTab === 'raids')}>Raids</button>
-        <button onClick={() => setActiveTab('hall')} style={btnStyle(activeTab === 'hall')}>Hall of Shame & Rankings</button>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <small>Usuario:</small>
-        <select value={currentUser?.id} onChange={(e) => switchUser(e.target.value)} style={{ padding: '5px' }}>
+      <div className="nav-user">
+        <small>Usuario</small>
+        <select value={currentUser?.id} onChange={(e) => switchUser(e.target.value)}>
           {users.map(u => (
-            <option key={u.id} value={u.id}>{u.gamertag} ({u.role} - Lv.{u.level})</option>
+            <option key={u.id} value={u.id}>{u.gamertag} ({u.role} · Lv.{u.level})</option>
           ))}
         </select>
       </div>
     </nav>
   );
 }
-
-const btnStyle = (active) => ({
-  background: active ? '#4f46e5' : '#374151',
-  color: 'white',
-  border: 'none',
-  padding: '8px 16px',
-  borderRadius: '4px',
-  cursor: 'pointer'
-});
