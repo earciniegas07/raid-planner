@@ -1,12 +1,12 @@
 import { useContext } from 'react';
 import { RaidContext } from '../context/RaidContext';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const TACTICAL_ROLES = ['Tank', 'Healer', 'DPS', 'Support', 'Bench'];
 
 export function RoleAssignments({ raidId }) {
   const { raidAssignments, users, overrideAssignment } = useContext(RaidContext);
-  const { currentUser } = useContext(AuthContext);
+  const { user: currentUser } = useAuth();
 
   const assignments = raidAssignments[raidId] || [];
   if (assignments.length === 0) return null;

@@ -1,27 +1,32 @@
-import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-export function Navbar({ activeTab, setActiveTab }) {
-  const { currentUser, switchUser, users } = useContext(AuthContext);
+export function Navbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const tabClass = ({ isActive }) => `nav-tab ${isActive ? 'active' : ''}`;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <nav className="navbar">
       <h2 className="nav-brand">Raid<span>Planner</span></h2>
-
-      <div className="nav-tabs">
-        <button className={`nav-tab ${activeTab === 'clans' ? 'active' : ''}`} onClick={() => setActiveTab('clans')}>Clanes</button>
-        <button className={`nav-tab ${activeTab === 'raids' ? 'active' : ''}`} onClick={() => setActiveTab('raids')}>Raids</button>
-        <button className={`nav-tab ${activeTab === 'hall' ? 'active' : ''}`} onClick={() => setActiveTab('hall')}>Hall of Shame</button>
-      </div>
-
-      <div className="nav-user">
-        <small>Usuario</small>
-        <select value={currentUser?.id} onChange={(e) => switchUser(e.target.value)}>
-          {users.map(u => (
-            <option key={u.id} value={u.id}>{u.gamertag} ({u.role} · Lv.{u.level})</option>
-          ))}
-        </select>
-      </div>
+      {user && (
+        <>
+          <div className="nav-tabs">
+            <NavLink to="/clans" className={tabClass}>Clanes</NavLink>
+            <NavLink to="/raids" className={tabClass}>Raids</NavLink>
+            <NavLink to="/hall" className={tabClass}>Hall of Shame</NavLink>
+          </div>
+          <div className="nav-user">
+            <small>{user.gamertag} · {user.role}</small>
+            <button className="btn" onClick={handleLogout}>Cerrar sesión</button>
+          </div>
+        </>
+      )}
     </nav>
   );
 }
