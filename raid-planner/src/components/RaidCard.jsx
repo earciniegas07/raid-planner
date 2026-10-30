@@ -1,10 +1,10 @@
 import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { RaidContext } from '../context/RaidContext';
 import { RoleAssignments } from './RoleAssignments';
 
 export function RaidCard({ raid }) {
-  const { currentUser } = useContext(AuthContext);
+  const { user: currentUser } = useAuth();
   const { changeRaidState } = useContext(RaidContext);
 
   return (
