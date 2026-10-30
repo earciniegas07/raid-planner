@@ -1,38 +1,32 @@
-import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-export function Navbar({ activeTab, setActiveTab }) {
-  const { currentUser, switchUser, users } = useContext(AuthContext);
+export function Navbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const tabClass = ({ isActive }) => `nav-tab ${isActive ? 'active' : ''}`;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
-    <nav style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', background: '#1e1e24', color: '#fff', alignItems: 'center' }}>
-      <div>
-        <h2 style={{ margin: 0 }}>🛡️ RaidPlanner</h2>
-      </div>
-
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <button onClick={() => setActiveTab('clans')} style={btnStyle(activeTab === 'clans')}>Clanes</button>
-        <button onClick={() => setActiveTab('raids')} style={btnStyle(activeTab === 'raids')}>Raids</button>
-        <button onClick={() => setActiveTab('hall')} style={btnStyle(activeTab === 'hall')}>Hall of Shame & Rankings</button>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <small>Usuario:</small>
-        <select value={currentUser?.id} onChange={(e) => switchUser(e.target.value)} style={{ padding: '5px' }}>
-          {users.map(u => (
-            <option key={u.id} value={u.id}>{u.gamertag} ({u.role} - Lv.{u.level})</option>
-          ))}
-        </select>
-      </div>
+    <nav className="navbar">
+      <h2 className="nav-brand">Raid<span>Planner</span></h2>
+      {user && (
+        <>
+          <div className="nav-tabs">
+            <NavLink to="/clans" className={tabClass}>Clanes</NavLink>
+            <NavLink to="/raids" className={tabClass}>Raids</NavLink>
+            <NavLink to="/hall" className={tabClass}>Hall of Shame</NavLink>
+          </div>
+          <div className="nav-user">
+            <small>{user.gamertag} · {user.role}</small>
+            <button className="btn" onClick={handleLogout}>Cerrar sesión</button>
+          </div>
+        </>
+      )}
     </nav>
   );
 }
-
-const btnStyle = (active) => ({
-  background: active ? '#4f46e5' : '#374151',
-  color: 'white',
-  border: 'none',
-  padding: '8px 16px',
-  borderRadius: '4px',
-  cursor: 'pointer'
-});
