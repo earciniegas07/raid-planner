@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const tabClass = ({ isActive }) => `nav-tab ${isActive ? 'active' : ''}`;
 
@@ -20,6 +20,7 @@ export function Navbar() {
             <NavLink to="/clans" className={tabClass}>Clanes</NavLink>
             <NavLink to="/raids" className={tabClass}>Raids</NavLink>
             <NavLink to="/hall" className={tabClass}>Hall of Shame</NavLink>
+            {isAdmin && <NavLink to="/admin" className={tabClass}>Administración</NavLink>}
           </div>
           <div className="nav-user">
             <small>{user.gamertag} · {user.role}</small>

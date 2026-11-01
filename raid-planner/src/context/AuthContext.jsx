@@ -27,6 +27,16 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('auth:logout', logout);
   }, [logout]);
 
+  // Vuelve a pedir el usuario (p. ej. tras unirse a un clan o cambiar su rol)
+  const refreshUser = useCallback(async () => {
+    try {
+      const { data } = await api.get('/auth/me');
+      setUser(data);
+    } catch {
+      /* el interceptor se encarga de los 401 */
+    }
+  }, []);
+
   const saveSession = ({ token, user }) => {
     localStorage.setItem('token', token);
     setUser(user);
@@ -45,7 +55,7 @@ export function AuthProvider({ children }) {
   const isAdmin = user?.role === 'Raid Leader' || user?.role === 'Officer';
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

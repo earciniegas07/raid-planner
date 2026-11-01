@@ -1,0 +1,109 @@
+/* Estilos complementarios: formularios, autenticación, estados de carga y notificaciones */
+
+/* ---------- Formularios ---------- */
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.field label { font-size: 12px; color: var(--text-dim); }
+.field input,
+.field select,
+.field textarea {
+  background: var(--bg-elevated);
+  color: var(--text-h);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.field textarea { resize: vertical; }
+.field input:focus,
+.field select:focus,
+.field textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0 12px;
+}
+.roles-fieldset {
+  border: 1px solid var(--border-soft, var(--border));
+  border-radius: var(--radius);
+  margin: 0 0 12px;
+  padding: 10px 12px 0;
+}
+.roles-fieldset legend { font-size: 12px; color: var(--text-dim); padding: 0 6px; }
+
+.auth-wrap { display: flex; justify-content: center; padding: 32px 16px; }
+.auth-card { width: 100%; max-width: 420px; margin-top: 0; }
+.auth-card .btn { width: 100%; }
+
+/* ---------- Utilidades ---------- */
+.muted { color: var(--text-dim); font-size: 13px; }
+.toolbar { margin: 16px 0 10px; justify-content: space-between; }
+.toolbar h3 { margin: 0; }
+.toolbar select { flex: 0 1 240px; }
+.actions { margin-top: 10px; }
+.assignments { margin-top: 12px; }
+.assignments h3 { font-size: 13px; }
+.assignments-list { display: flex; flex-direction: column; gap: 6px; }
+.clan-banner { width: 100%; max-height: 100px; object-fit: cover; border-radius: var(--radius); margin-bottom: 8px; }
+button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.attendance-chip {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.attendance-chip[data-attendance="Confirmed"] { color: var(--state-completed); border-color: var(--state-completed); }
+.attendance-chip[data-attendance="Declined"] { color: var(--state-failed); border-color: var(--state-failed); }
+
+/* ---------- Estados de carga / error ---------- */
+.page-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 40px 16px;
+  color: var(--text-dim);
+  text-align: center;
+}
+.page-state.error { flex-direction: column; color: var(--state-failed); }
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- Notificaciones ---------- */
+.toast-stack {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 1000;
+  max-width: min(360px, calc(100vw - 32px));
+}
+.toast {
+  background: var(--bg-elevated);
+  color: var(--text-h);
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+.toast.success { border-left-color: var(--state-completed); }
+.toast.error { border-left-color: var(--state-failed); }

@@ -1,137 +1,103 @@
-import { createContext, useState } from 'react';
-import { initialRaids, initialUsers, initialFailures } from '../data/mockData';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import api, { getErrorMessage } from '../services/api';
+import { useAuth } from './AuthContext';
+import { useToast } from './ToastContext';
 
-export const RaidContext = createContext();
+export const RaidContext = createContext(null);
+export const useRaids = () => useContext(RaidContext);
 
-// Ordena candidatos: Officer/Raid Leader primero, luego mayor nivel
-function seniorityRank(user) {
-  return user.role === 'Officer' || user.role === 'Raid Leader' ? 0 : 1;
-}
-
-function assignRolesForRaid(raid, allUsers) {
-  const pool = allUsers.filter(u => u.clanId === raid.clanId && u.role !== 'Bench');
-  const required = raid.requiredRoles || {};
-  const assignments = [];
-  const usedIds = new Set();
-
-  Object.entries(required).forEach(([tacticalRole, count]) => {
-    const candidates = pool
-      .filter(u => u.class === tacticalRole && !usedIds.has(u.id))
-      .sort((a, b) => {
-        const seniorityDiff = seniorityRank(a) - seniorityRank(b);
-        if (seniorityDiff !== 0) return seniorityDiff;
-        return b.level - a.level;
-      });
-
-    candidates.slice(0, count).forEach(u => {
-      assignments.push({ userId: u.id, tacticalRole, source: 'auto' });
-      usedIds.add(u.id);
-    });
-  });
-
-  pool.forEach(u => {
-    if (!usedIds.has(u.id)) {
-      assignments.push({ userId: u.id, tacticalRole: 'Bench', source: 'auto' });
-    }
-  });
-
-  return assignments;
-}
-
-// Precalcula asignaciones para las raids que ya nacen Locked/InProgress/Completed/Failed en el seed
-function buildInitialAssignments(raids, users) {
-  const map = {};
-  raids.forEach(raid => {
-    if (raid.state !== 'Planning') {
-      map[raid.id] = assignRolesForRaid(raid, users);
-    }
-  });
-  return map;
-}
+const EMPTY_RANKINGS = { mostReliable: [], recentFailures: [] };
 
 export function RaidProvider({ children }) {
-  const [raids, setRaids] = useState(initialRaids);
-  const [users, setUsers] = useState(initialUsers);
-  const [failures, setFailures] = useState(initialFailures);
-  const [raidAssignments, setRaidAssignments] = useState(() =>
-    buildInitialAssignments(initialRaids, initialUsers)
-  );
+  const { user, refreshUser } = useAuth();
+  const { toast } = useToast();
+  const userId = user?.id;
 
-  const changeRaidState = (raidId, newState, userRole) => {
-    setRaids(prev => prev.map(raid => {
-      if (raid.id !== raidId) return raid;
+  const [raids, setRaids] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [clans, setClans] = useState([]);
+  const [rankings, setRankings] = useState(EMPTY_RANKINGS);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [pending, setPending] = useState(0);
 
-      if (raid.state === "Planning" && newState === "Locked") {
-        if (userRole === "Raid Leader" || userRole === "Officer") {
-          setRaidAssignments(prevAssign => ({
-            ...prevAssign,
-            [raidId]: assignRolesForRaid(raid, users),
-          }));
-          return { ...raid, state: newState };
-        }
-      }
-
-      if (raid.state === "Locked" && newState === "InProgress") {
-        // TODO: siguiente paso — disparo automático al llegar startTime
-        return { ...raid, state: newState };
-      }
-
-      if (raid.state === "InProgress" && (newState === "Completed" || newState === "Failed")) {
-        if (userRole === "Raid Leader") {
-          applyRaidEndReliability(raid.id, newState);
-          return { ...raid, state: newState };
-        }
-      }
-
-      return raid;
-    }));
-  };
-
-  const overrideAssignment = (raidId, userId, newTacticalRole) => {
-    setRaidAssignments(prev => {
-      const current = prev[raidId] || [];
-      const updated = current.map(a =>
-        a.userId === userId ? { ...a, tacticalRole: newTacticalRole, source: 'manual' } : a
-      );
-      return { ...prev, [raidId]: updated };
-    });
-  };
-
-  const addFailure = (userId, raidId, type, severity) => {
-    const newFailure = { id: Date.now(), userId, raidId, type, severity: Number(severity) };
-    const updatedFailures = [...failures, newFailure];
-    setFailures(updatedFailures);
-
-    const totalRaidFailures = updatedFailures
-      .filter(f => f.userId === userId && f.raidId === raidId)
-      .reduce((sum, f) => sum + f.severity, 0);
-
-    if (totalRaidFailures >= 8) {
-      setUsers(prevUsers => prevUsers.map(u => {
-        if (u.id === userId) {
-          return { ...u, role: "Bench", reliability: Math.max(0, u.reliability - 10) };
-        }
-        return u;
-      }));
+  const loadAll = useCallback(async () => {
+    try {
+      const [r, u, c, k] = await Promise.all([
+        api.get('/raids'),
+        api.get('/users'),
+        api.get('/clans'),
+        api.get('/raids/rankings/all'),
+      ]);
+      setRaids(r.data);
+      setUsers(u.data);
+      setClans(c.data);
+      setRankings(k.data);
+      setError('');
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
-  const applyRaidEndReliability = (raidId, result) => {
-    setUsers(prev => prev.map(u => {
-      if (result === "Completed") return { ...u, reliability: u.reliability + 10 };
-      if (result === "Failed") {
-        const penalty = u.role === "Raid Leader" ? 15 : 5;
-        return { ...u, reliability: Math.max(0, u.reliability - penalty) };
-      }
-      return u;
-    }));
-  };
+  // Carga inicial cuando hay sesión; limpia todo al cerrar sesión
+  useEffect(() => {
+    if (!userId) {
+      setRaids([]); setUsers([]); setClans([]); setRankings(EMPTY_RANKINGS);
+      return;
+    }
+    setLoading(true);
+    loadAll();
+  }, [userId, loadAll]);
+
+  // Ejecuta una mutación, refresca los datos y avisa al usuario. Devuelve true/false.
+  const act = useCallback(async (request, okMessage) => {
+    setPending((n) => n + 1);
+    try {
+      const res = await request();
+      await loadAll();
+      if (okMessage) toast('success', typeof okMessage === 'function' ? okMessage(res.data) : okMessage);
+      return true;
+    } catch (err) {
+      toast('error', getErrorMessage(err));
+      return false;
+    } finally {
+      setPending((n) => n - 1);
+    }
+  }, [loadAll, toast]);
+
+  const actions = useMemo(() => ({
+    // Raids
+    createRaid: (payload) => act(() => api.post('/raids', payload), 'Raid creada'),
+    updateRaid: (id, payload) => act(() => api.put(`/raids/${id}`, payload), 'Raid actualizada'),
+    deleteRaid: (id) => act(() => api.delete(`/raids/${id}`), 'Raid eliminada'),
+    changeRaidState: (id, newState) =>
+      act(() => api.patch(`/raids/${id}/state`, { newState }), `Raid en estado ${newState}`),
+    overrideAssignment: (raidId, targetUserId, tacticalRole) =>
+      act(() => api.patch(`/raids/${raidId}/assignments/${targetUserId}`, { tacticalRole }), 'Rol reasignado'),
+    addFailure: (raidId, targetUserId, type, severity) =>
+      act(
+        () => api.post(`/raids/${raidId}/failures`, { userId: targetUserId, type, severity }),
+        (d) => (d?.benched ? 'Fallo registrado: el jugador pasa a Bench (8+ puntos)' : 'Fallo registrado')
+      ),
+    checkIn: (raidId) => act(() => api.patch(`/raids/${raidId}/checkin`), 'Check-in registrado'),
+    checkOut: (raidId) => act(() => api.patch(`/raids/${raidId}/checkout`), 'Checkout registrado'),
+    // Clanes
+    createClan: (payload) => act(() => api.post('/clans', payload), 'Clan creado'),
+    updateClan: (id, payload) => act(() => api.put(`/clans/${id}`, payload), 'Clan actualizado'),
+    deleteClan: (id) => act(() => api.delete(`/clans/${id}`), 'Clan eliminado'),
+    joinClan: async (id) => {
+      const ok = await act(() => api.post(`/clans/${id}/join`), 'Te uniste al clan');
+      if (ok) await refreshUser();
+      return ok;
+    },
+  }), [act, refreshUser]);
 
   return (
-    <RaidContext.Provider value={{
-      raids, users, failures, raidAssignments,
-      changeRaidState, addFailure, overrideAssignment,
-    }}>
+    <RaidContext.Provider
+      value={{ raids, users, clans, rankings, loading, error, busy: pending > 0, reload: loadAll, ...actions }}
+    >
       {children}
     </RaidContext.Provider>
   );

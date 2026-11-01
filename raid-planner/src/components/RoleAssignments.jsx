@@ -1,40 +1,43 @@
-import { useContext } from 'react';
-import { RaidContext } from '../context/RaidContext';
 import { useAuth } from '../context/AuthContext';
+import { useRaids } from '../context/RaidContext';
+import { ATTENDANCE_LABEL } from '../utils/format';
 
 const TACTICAL_ROLES = ['Tank', 'Healer', 'DPS', 'Support', 'Bench'];
 
-export function RoleAssignments({ raidId }) {
-  const { raidAssignments, users, overrideAssignment } = useContext(RaidContext);
-  const { user: currentUser } = useAuth();
+export function RoleAssignments({ raid }) {
+  const { isAdmin } = useAuth();
+  const { overrideAssignment, busy } = useRaids();
 
-  const assignments = raidAssignments[raidId] || [];
+  const assignments = (raid.assignments || []).filter((a) => a.user);
   if (assignments.length === 0) return null;
 
-  const canOverride = currentUser?.role === 'Raid Leader';
+  const canOverride = isAdmin && ['Locked', 'InProgress'].includes(raid.state);
 
   return (
-    <div style={{ marginTop: '12px' }}>
-      <h3 style={{ fontSize: '13px' }}>Roles Asignados</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        {assignments.map(a => {
-          const user = users.find(u => u.id === a.userId);
-          if (!user) return null;
-          return (
-            <div key={a.userId} className="raid-frame" data-class={user.class}>
-              <span className="name">{user.gamertag}</span>
-              {canOverride ? (
-                <select value={a.tacticalRole} onChange={e => overrideAssignment(raidId, a.userId, e.target.value)}>
-                  {TACTICAL_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-              ) : (
-                <span className="class-tag" style={{ color: a.tacticalRole === 'Bench' ? 'var(--state-bench)' : 'var(--accent)' }}>
-                  {a.tacticalRole}{a.source === 'manual' ? ' *' : ''}
-                </span>
-              )}
-            </div>
-          );
-        })}
+    <div className="assignments">
+      <h3>Roles asignados</h3>
+      <div className="assignments-list">
+        {assignments.map((a) => (
+          <div key={a.user._id} className="raid-frame" data-class={a.user.class}>
+            <span className="name">{a.user.gamertag}</span>
+            {canOverride ? (
+              <select
+                value={a.tacticalRole}
+                disabled={busy}
+                onChange={(e) => overrideAssignment(raid._id, a.user._id, e.target.value)}
+              >
+                {TACTICAL_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+              </select>
+            ) : (
+              <span className="class-tag" style={{ color: a.tacticalRole === 'Bench' ? 'var(--state-bench)' : 'var(--accent)' }}>
+                {a.tacticalRole}{a.source === 'manual' ? ' *' : ''}
+              </span>
+            )}
+            <span className="attendance-chip" data-attendance={a.attendance}>
+              {ATTENDANCE_LABEL[a.attendance] || a.attendance}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
